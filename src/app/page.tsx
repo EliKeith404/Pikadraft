@@ -1,5 +1,6 @@
+import { Sprites } from "@pkmn/img";
+import Image from "next/image";
 import Link from "next/link";
-import { PokemonClient } from "pokenode-ts";
 
 import { CreatePost } from "~/app/_components/create-post";
 import { getServerAuthSession } from "~/server/auth";
@@ -9,18 +10,13 @@ export default async function Home() {
   const hello = await api.post.hello.query({ text: "from tRPC" });
   const session = await getServerAuthSession();
 
-  const pokeApiClient = new PokemonClient();
+  const ouFormat = await api.pokemon.getByFormat.query({
+    generation: 9,
+    format: "tier",
+    tier: "ZU",
+  });
 
-  const pokemonName = "pichu";
-
-  const pokemonData = await pokeApiClient.getPokemonByName(
-    pokemonName.toLowerCase().trim(),
-  );
-  const pokeImg =
-    pokemonData.sprites.other?.["showdown"].front_default ??
-    pokemonData.sprites.front_default;
-
-  console.log(pokeImg);
+  console.log(ouFormat);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
@@ -39,8 +35,12 @@ export default async function Home() {
               Just the basics - Everything you need to know to set up your
               database and authentication.
             </div>
-            <img src={pokeImg ?? ""} alt="pokemon" />
+
+            {/* <img src={url ?? pokeImg ?? ""} alt="pokemon" /> */}
           </Link>
+          {ouFormat.map((poke) => {
+            return <img key={poke.name} src={poke.url} alt={poke.name} />;
+          })}
           <Link
             className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"
             href="https://create.t3.gg/en/introduction"
