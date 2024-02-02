@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
-import { Icons, Sprites } from "@pkmn/img";
+import { Sprites } from "@pkmn/img";
 import {
   Generations,
   type SpeciesFormatsData,
@@ -28,11 +28,11 @@ export const pokemonRouter = createTRPCRouter({
     }),
 
   /**
-   * Gets Pokemon names by a Smogon format.
+   * Gets Pokemon names and sprites by a Smogon format.
    *
-   * @returns An array of Pokemon names
+   * @returns An array of Pokemon names and sprite URLs
    */
-  getByFormat: publicProcedure
+  getAllByFormat: publicProcedure
     .input(
       z.object({
         generation: z.custom<keyof typeof Generations>(),
@@ -51,6 +51,44 @@ export const pokemonRouter = createTRPCRouter({
           const { url: spriteUrl } = Sprites.getPokemon(poke);
 
           pokeArr.push({ name: poke, spriteUrl: spriteUrl });
+        }
+      }
+
+      return pokeArr;
+    }),
+
+  /**
+   * Gets N amount of randomly picked Pokemon names and sprites by a Smogon format.
+   *
+   * @returns An array of Pokemon names and sprite URLs
+   */
+  getRandomByFormat: publicProcedure
+    .input(
+      z
+        .object({
+          limit: z.number().default(3),
+          rounds: z.number().default(6),
+          generation: z.custom<keyof typeof Generations>(),
+          formatList: z.array(z.enum(["doublesTier", "natDexTier", "tier"])),
+          tier: z.custom<
+            SpeciesFormatsData["doublesTier" | "natDexTier" | "tier"]
+          >(),
+        })
+        .refine((value) => value.formatList.length === value.rounds, {
+          message: "Format list length must match rounds",
+          path: ["formatList"],
+        }),
+    )
+    .query(({ input }) => {
+      const pokeArr = [];
+      for (const poke in Generations[input.generation]) {
+        for (const format of input.formatList) {
+          // TODO: Finish this function
+          if (Generations[input.generation][poke]?.[format] === input.tier) {
+            const { url: spriteUrl } = Sprites.getPokemon(poke);
+
+            pokeArr.push({ name: poke, spriteUrl: spriteUrl });
+          }
         }
       }
 
