@@ -1,5 +1,3 @@
-import { Sprites } from "@pkmn/img";
-import Image from "next/image";
 import Link from "next/link";
 
 import { CreatePost } from "~/app/_components/create-post";
@@ -13,7 +11,7 @@ export default async function Home() {
   const ouFormat = await api.pokemon.getByFormat.query({
     generation: 9,
     format: "tier",
-    tier: "ZU",
+    tier: "PU",
   });
 
   console.log(ouFormat);
@@ -39,7 +37,7 @@ export default async function Home() {
             {/* <img src={url ?? pokeImg ?? ""} alt="pokemon" /> */}
           </Link>
           {ouFormat.map((poke) => {
-            return <img key={poke.name} src={poke.url} alt={poke.name} />;
+            return <img key={poke.name} src={poke.spriteUrl} alt={poke.name} />;
           })}
           <Link
             className="flex max-w-xs flex-col gap-4 rounded-xl bg-white/10 p-4 hover:bg-white/20"

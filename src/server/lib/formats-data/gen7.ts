@@ -1,6 +1,6 @@
-import { SpeciesFormatsData } from "./format-types";
+import { type SpeciesFormatsData } from "./format-types";
 
-export const Gen7FormatsData: { [k: string]: SpeciesFormatsData } = {
+export const Gen7FormatsData: Record<string, SpeciesFormatsData> = {
   bulbasaur: {
     tier: "LC",
   },

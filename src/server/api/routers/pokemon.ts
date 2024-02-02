@@ -1,11 +1,9 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
-import { Sprites } from "@pkmn/img";
-import { Gen9FormatsData } from "~/server/lib/formats-data/gen9";
+import { Icons, Sprites } from "@pkmn/img";
 import {
   Generations,
-  SpeciesFormatsData,
-  TierTypes,
+  type SpeciesFormatsData,
 } from "~/server/lib/formats-data/format-types";
 
 export const pokemonRouter = createTRPCRouter({
@@ -45,13 +43,14 @@ export const pokemonRouter = createTRPCRouter({
       }),
     )
     .query(({ input }) => {
-      let pokeArr = [];
+      const pokeArr = [];
       for (const poke in Generations[input.generation]) {
         if (
           Generations[input.generation][poke]?.[input.format] === input.tier
         ) {
-          const { url } = Sprites.getPokemon(poke);
-          pokeArr.push({ name: poke, url: url });
+          const { url: spriteUrl } = Sprites.getPokemon(poke);
+
+          pokeArr.push({ name: poke, spriteUrl: spriteUrl });
         }
       }
 

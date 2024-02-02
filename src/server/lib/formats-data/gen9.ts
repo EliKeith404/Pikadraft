@@ -1,6 +1,6 @@
-import { SpeciesFormatsData } from "./format-types";
+import { type SpeciesFormatsData } from "./format-types";
 
-export const Gen9FormatsData: { [k: string]: SpeciesFormatsData } = {
+export const Gen9FormatsData: Record<string, SpeciesFormatsData> = {
   bulbasaur: {
     isNonstandard: "Past",
     tier: "Illegal",
