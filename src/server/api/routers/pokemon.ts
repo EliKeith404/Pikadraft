@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { Sprites } from "@pkmn/img";
 import {
   Generations,
+  TierTypes,
   type SpeciesFormatsData,
 } from "~/server/lib/formats-data/format-types";
 
@@ -70,34 +71,47 @@ export const pokemonRouter = createTRPCRouter({
         generation: z.custom<keyof typeof Generations>(),
         format: z.enum(["doublesTier", "natDexTier", "tier"]),
         tierArray: z
-          .array(
-            z.custom<
-              SpeciesFormatsData["doublesTier" | "natDexTier" | "tier"]
-            >(),
-          )
+          .array(z.custom<TierTypes["singles" | "doubles" | "other"]>())
           .default(["OU", "UU", "RU", "NU", "PU", "ZU"]),
-        limit: z.number().default(3),
+        choose: z.number().default(3),
       }),
     )
     .query(({ input }) => {
+      type PokemonInfo = {
+        name: string;
+        spriteUrl: string;
+      };
+
+      //! Change to grab one tier index at a time, to allow pokemon that weren't chosen to be entered back into the pool
+
       const result = [];
 
-      for (const tier of input.tierArray) {
-        const tierArr = [];
+      const uniqueTiers = [...new Set(input.tierArray)];
+      const pokemonInTiers: Record<string, PokemonInfo[]> = uniqueTiers.reduce(
+        (obj, key) => ({ ...obj, [key]: [] }),
+        {},
+      );
 
+      for (const tier of uniqueTiers) {
         for (const poke in Generations[input.generation]) {
           if (Generations[input.generation][poke]?.[input.format] === tier) {
             const { url: spriteUrl } = Sprites.getPokemon(poke);
 
-            tierArr.push({ name: poke, spriteUrl: spriteUrl });
+            pokemonInTiers[tier]!.push({
+              name: poke,
+              spriteUrl: spriteUrl,
+            });
           }
         }
 
-        // Shuffle the array and pick N number of the first Pokemon in the list
-        const randomizedPicks = tierArr
-          .sort(() => 0.5 - Math.random())
-          .slice(0, input.limit);
+        // Shuffle the array once a tier has been filled out
+        pokemonInTiers[tier] =
+          pokemonInTiers[tier]!.sort(() => 0.5 - Math.random()) ?? [];
+      }
 
+      // Take N number of Pokemon, place them in their own array and remove them from the original array
+      for (const tier of input.tierArray) {
+        const randomizedPicks = pokemonInTiers[tier]!.splice(0, input.choose);
         result.push(randomizedPicks);
       }
 

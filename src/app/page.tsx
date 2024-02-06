@@ -14,8 +14,8 @@ export default async function Home() {
   const randomized = await api.pokemon.getRandomByTier.query({
     generation: 9,
     format: "tier",
-    tierArray: ["OU", "OU", "UU", "UU", "RU", "RU"],
-    // limit: 4,
+    tierArray: ["OU", "OU", "OU", "OU", "OU", "OU"],
+    choose: 4,
   });
 
   console.log(randomized);
