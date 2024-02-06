@@ -32,7 +32,7 @@ export const pokemonRouter = createTRPCRouter({
    *
    * @returns An array of Pokemon names and sprite URLs
    */
-  getAllByFormat: publicProcedure
+  getAllByTier: publicProcedure
     .input(
       z.object({
         generation: z.custom<keyof typeof Generations>(),
@@ -59,40 +59,49 @@ export const pokemonRouter = createTRPCRouter({
 
   /**
    * Gets N amount of randomly picked Pokemon names and sprites by a Smogon format.
-   *
-   * @returns An array of Pokemon names and sprite URLs
+   * @param generation Integer value of generation to use.
+   * @param format Singles, Doubles, or NatDex formats.
+   * @param tierArray Array of tiers to grab Pokemon from. Determines total party size.
+   * @returns A list of arrays each containing Pokemon names and sprite URLs, based on the `tierArray` param.
    */
-  getRandomByFormat: publicProcedure
+  getRandomByTier: publicProcedure
     .input(
-      z
-        .object({
-          limit: z.number().default(3),
-          rounds: z.number().default(6),
-          generation: z.custom<keyof typeof Generations>(),
-          formatList: z.array(z.enum(["doublesTier", "natDexTier", "tier"])),
-          tier: z.custom<
-            SpeciesFormatsData["doublesTier" | "natDexTier" | "tier"]
-          >(),
-        })
-        .refine((value) => value.formatList.length === value.rounds, {
-          message: "Format list length must match rounds",
-          path: ["formatList"],
-        }),
+      z.object({
+        generation: z.custom<keyof typeof Generations>(),
+        format: z.enum(["doublesTier", "natDexTier", "tier"]),
+        tierArray: z
+          .array(
+            z.custom<
+              SpeciesFormatsData["doublesTier" | "natDexTier" | "tier"]
+            >(),
+          )
+          .default(["OU", "UU", "RU", "NU", "PU", "ZU"]),
+        limit: z.number().default(3),
+      }),
     )
     .query(({ input }) => {
-      const pokeArr = [];
-      for (const poke in Generations[input.generation]) {
-        for (const format of input.formatList) {
-          // TODO: Finish this function
-          if (Generations[input.generation][poke]?.[format] === input.tier) {
+      const result = [];
+
+      for (const tier of input.tierArray) {
+        const tierArr = [];
+
+        for (const poke in Generations[input.generation]) {
+          if (Generations[input.generation][poke]?.[input.format] === tier) {
             const { url: spriteUrl } = Sprites.getPokemon(poke);
 
-            pokeArr.push({ name: poke, spriteUrl: spriteUrl });
+            tierArr.push({ name: poke, spriteUrl: spriteUrl });
           }
         }
+
+        // Shuffle the array and pick N number of the first Pokemon in the list
+        const randomizedPicks = tierArr
+          .sort(() => 0.5 - Math.random())
+          .slice(0, input.limit);
+
+        result.push(randomizedPicks);
       }
 
-      return pokeArr;
+      return result;
     }),
 
   create: protectedProcedure

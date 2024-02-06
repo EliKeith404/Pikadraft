@@ -3,22 +3,40 @@ import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
 
 export default async function Home() {
-  const ouFormat = await api.pokemon.getAllByFormat.query({
+  // const ouFormat = await api.pokemon.getAllByTier.query({
+  //   generation: 9,
+  //   format: "tier",
+  //   tier: "ZU",
+  // });
+
+  // console.log(ouFormat);
+
+  const randomized = await api.pokemon.getRandomByTier.query({
     generation: 9,
     format: "tier",
-    tier: "ZU",
+    tierArray: ["OU", "OU", "UU", "UU", "RU", "RU"],
+    // limit: 4,
   });
 
-  console.log(ouFormat);
+  console.log(randomized);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="grid grid-cols-8">
-        {ouFormat
+      <div className="grid grid-cols-1">
+        {/* {ouFormat
           .sort((a, b) => a.name.localeCompare(b.name))
           .map((poke) => {
             return <img key={poke.name} src={poke.spriteUrl} alt={poke.name} />;
-          })}
+          })} */}
+        {randomized.map((tier, i) => (
+          <div key={i} className="flex items-center justify-center">
+            {tier.map((poke) => (
+              <div key={poke.name} className="flex">
+                <img src={poke.spriteUrl} alt={poke.name} />
+              </div>
+            ))}
+          </div>
+        ))}
       </div>
       {/* <CrudShowcase /> */}
     </main>
