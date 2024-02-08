@@ -6,6 +6,8 @@ import {
   TierTypes,
   type SpeciesFormatsData,
 } from "~/server/lib/formats-data/format-types";
+import { resourceLimits } from "worker_threads";
+import { Pokedex } from "~/server/lib/pokedex/pokedex";
 
 export const pokemonRouter = createTRPCRouter({
   hello: publicProcedure
@@ -71,7 +73,9 @@ export const pokemonRouter = createTRPCRouter({
         generation: z.custom<keyof typeof Generations>(),
         format: z.enum(["doublesTier", "natDexTier", "tier"]),
         tierArray: z
-          .array(z.custom<TierTypes["singles" | "doubles" | "other"]>())
+          .array(
+            z.custom<TierTypes.Singles | TierTypes.Doubles | TierTypes.Other>(),
+          )
           .default(["OU", "UU", "RU", "NU", "PU", "ZU"]),
         choose: z.number().default(3),
       }),
@@ -79,7 +83,9 @@ export const pokemonRouter = createTRPCRouter({
     .query(({ input }) => {
       type PokemonInfo = {
         name: string;
+        tier: string;
         spriteUrl: string;
+        typeIconUrls: string[];
       };
 
       //! Change to grab one tier index at a time, to allow pokemon that weren't chosen to be entered back into the pool
@@ -96,10 +102,21 @@ export const pokemonRouter = createTRPCRouter({
         for (const poke in Generations[input.generation]) {
           if (Generations[input.generation][poke]?.[input.format] === tier) {
             const { url: spriteUrl } = Sprites.getPokemon(poke);
+            const { name, types } = Pokedex[poke as keyof typeof Pokedex]!;
+
+            // Get typeIconUrl
+            const typeIconUrls = [];
+            for (const type of types) {
+              typeIconUrls.push(
+                `https://play.pokemonshowdown.com/sprites/types/${type}.png`,
+              );
+            }
 
             pokemonInTiers[tier]!.push({
-              name: poke,
+              name: name,
+              tier: tier,
               spriteUrl: spriteUrl,
+              typeIconUrls: typeIconUrls,
             });
           }
         }
@@ -114,6 +131,54 @@ export const pokemonRouter = createTRPCRouter({
         const randomizedPicks = pokemonInTiers[tier]!.splice(0, input.choose);
         result.push(randomizedPicks);
       }
+
+      return result;
+    }),
+
+  getRandomSetByTier: publicProcedure
+    .input(
+      z.object({
+        generation: z.custom<keyof typeof Generations>(),
+        format: z.enum(["doublesTier", "natDexTier", "tier"]),
+        tier: z.custom<
+          TierTypes.Singles | TierTypes.Doubles | TierTypes.Other
+        >(),
+        choose: z.number().default(3),
+        currentParty: z.array(z.string()),
+      }),
+    )
+    .query(({ input }) => {
+      const pokemonInTierArray = [];
+
+      for (const poke in Generations[input.generation]) {
+        if (
+          Generations[input.generation][poke]?.[input.format] === input.tier &&
+          !input.currentParty.includes(poke)
+        ) {
+          const { url: spriteUrl } = Sprites.getPokemon(poke);
+          const { name, types } = Pokedex[poke as keyof typeof Pokedex]!;
+
+          // Get typeIconUrl
+          const typeIconUrls = [];
+          for (const type of types) {
+            typeIconUrls.push(
+              `https://play.pokemonshowdown.com/sprites/types/${type}.png`,
+            );
+          }
+
+          pokemonInTierArray.push({
+            name: name,
+            tier: input.tier,
+            spriteUrl: spriteUrl,
+            typeIconUrls: typeIconUrls,
+          });
+        }
+      }
+
+      // Shuffle Array
+      const result = pokemonInTierArray
+        .sort(() => 0.5 - Math.random())
+        .slice(0, input.choose);
 
       return result;
     }),

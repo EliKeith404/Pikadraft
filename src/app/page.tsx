@@ -1,41 +1,34 @@
+"use server";
+
 import { CreatePost } from "~/app/_components/create-post";
 import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
+import DraftOption from "./_components/draft-option";
+import React from "react";
 
 export default async function Home() {
-  // const ouFormat = await api.pokemon.getAllByTier.query({
-  //   generation: 9,
-  //   format: "tier",
-  //   tier: "ZU",
-  // });
-
-  // console.log(ouFormat);
-
-  const randomized = await api.pokemon.getRandomByTier.query({
+  const randomized = await api.pokemon.getRandomSetByTier.query({
     generation: 9,
     format: "tier",
-    tierArray: ["OU", "OU", "OU", "OU", "OU", "OU"],
-    choose: 4,
+    tier: "UU",
+    currentParty: [],
+    // choose: 4,
   });
 
   console.log(randomized);
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="grid grid-cols-1">
-        {/* {ouFormat
-          .sort((a, b) => a.name.localeCompare(b.name))
-          .map((poke) => {
-            return <img key={poke.name} src={poke.spriteUrl} alt={poke.name} />;
-          })} */}
-        {randomized.map((tier, i) => (
-          <div key={i} className="flex items-center justify-center">
-            {tier.map((poke) => (
-              <div key={poke.name} className="flex">
-                <img src={poke.spriteUrl} alt={poke.name} />
-              </div>
-            ))}
-          </div>
+      <div className="flex gap-2">
+        {randomized.map((poke) => (
+          <React.Fragment key={poke.name}>
+            <DraftOption
+              name={poke.name}
+              tier={poke.tier}
+              spriteUrl={poke.spriteUrl}
+              typeIconUrls={poke.typeIconUrls}
+            />
+          </React.Fragment>
         ))}
       </div>
       {/* <CrudShowcase /> */}

@@ -20,8 +20,8 @@ export const Generations = {
   9: Gen9FormatsData,
 };
 
-export type TierTypes = {
-  singles:
+export namespace TierTypes {
+  export type Singles =
     | "AG"
     | "Uber"
     | "(Uber)"
@@ -41,7 +41,7 @@ export type TierTypes = {
     | "ZU"
     | "NFE"
     | "LC";
-  doubles:
+  export type Doubles =
     | "DUber"
     | "(DUber)"
     | "DOU"
@@ -51,10 +51,10 @@ export type TierTypes = {
     | "(DUU)"
     | "NFE"
     | "LC";
-  other: "Unreleased" | "Illegal" | "CAP" | "CAP NFE" | "CAP LC";
-};
+  export type Other = "Unreleased" | "Illegal" | "CAP" | "CAP NFE" | "CAP LC";
+}
 
-type Nonstandard =
+export type Nonstandard =
   | "Past"
   | "Future"
   | "Unobtainable"
@@ -64,9 +64,9 @@ type Nonstandard =
   | "Gigantamax";
 
 export interface SpeciesFormatsData {
-  doublesTier?: TierTypes["doubles"] | TierTypes["other"];
+  doublesTier?: TierTypes.Doubles | TierTypes.Other;
   gmaxUnreleased?: boolean;
   isNonstandard?: Nonstandard | null;
-  natDexTier?: TierTypes["singles"] | TierTypes["other"];
-  tier?: TierTypes["singles"] | TierTypes["other"];
+  natDexTier?: TierTypes.Singles | TierTypes.Other;
+  tier?: TierTypes.Singles | TierTypes.Other;
 }
