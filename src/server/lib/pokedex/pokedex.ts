@@ -1,6 +1,6 @@
-import { SpeciesData } from "./dex-species";
+import { type SpeciesData } from "./dex-species";
 
-export const Pokedex: { [speciesid: string]: SpeciesData } = {
+export const Pokedex: Record<string, SpeciesData> = {
   bulbasaur: {
     num: 1,
     name: "Bulbasaur",

@@ -14,16 +14,17 @@ type DraftPokemonProps = {
 const DraftOption = (props: DraftPokemonProps) => {
   return (
     <div className="rounded-xl from-pink-500 to-red-500 p-1 shadow hover:cursor-pointer hover:bg-gradient-to-r">
-      <div className="rounded-xl bg-card p-4 text-card-foreground">
-        <div className="flex h-56 w-36 flex-col items-center justify-center gap-1 ">
+      <div className="bg-card text-card-foreground rounded-xl p-4">
+        <div className="flex h-64 w-44 flex-col items-center justify-center gap-1 ">
           {/* NAME */}
           <h3 className="font-semibold leading-none tracking-tight">
             {props.name}
           </h3>
           {/* TYPE ICONS */}
           <div className="flex gap-2">
-            {props.typeIconUrls.map((url) => (
+            {props.typeIconUrls.map((url, i) => (
               <Image
+                key={i}
                 width={32}
                 height={14}
                 src={url}
@@ -32,7 +33,7 @@ const DraftOption = (props: DraftPokemonProps) => {
             ))}
           </div>
           {/* TIER */}
-          <h4 className="mb-6 text-sm text-muted-foreground">{props.tier}</h4>
+          <h4 className="text-muted-foreground mb-6 text-sm">{props.tier}</h4>
           {/* SPRITE */}
           <div className="relative flex h-40 w-32 items-center justify-center">
             <Image

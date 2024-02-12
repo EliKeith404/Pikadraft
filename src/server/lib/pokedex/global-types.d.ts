@@ -1,22 +1,23 @@
-type ID = "" | (string & { __isID: true });
+import { type Nonstandard } from "../formats-data/format-types";
 
-interface SpeciesAbility {
+export type ID = "" | (string & { __isID: true });
+
+export interface SpeciesAbility {
   0: string;
   1?: string;
   H?: string;
   S?: string;
 }
 
-type GenderName = "M" | "F" | "N" | "";
+export type GenderName = "M" | "F" | "N" | "";
 
-type StatIDExceptHP = "atk" | "def" | "spa" | "spd" | "spe";
-type StatID = "hp" | StatIDExceptHP;
-type StatsTable = { [stat in StatID]: number };
+export type StatIDExceptHP = "atk" | "def" | "spa" | "spd" | "spe";
+export type StatID = "hp" | StatIDExceptHP;
+export type StatsTable = { [stat in StatID]: number };
 
-interface AnyObject {
-  [k: string]: any;
-}
-type EffectType =
+export type AnyObject = Record<string, unknown>;
+
+export type EffectType =
   | "Condition"
   | "Pokemon"
   | "Move"
@@ -31,7 +32,7 @@ type EffectType =
   | "Rule"
   | "ValidatorRule";
 
-interface EffectData {
+export interface EffectData {
   name?: string;
   desc?: string;
   duration?: number;
@@ -41,7 +42,7 @@ interface EffectData {
   shortDesc?: string;
 }
 
-interface BasicEffect extends EffectData {
+export interface BasicEffect extends EffectData {
   id: ID;
   effectType: EffectType;
   exists: boolean;

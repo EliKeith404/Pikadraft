@@ -1,5 +1,14 @@
-import { SpeciesFormatsData, TierTypes } from "../formats-data/format-types";
+import {
+  type SpeciesFormatsData,
+  type TierTypes,
+} from "../formats-data/format-types";
 import { BasicEffect, toID } from "./dex-data";
+import type {
+  SpeciesAbility,
+  ID,
+  StatsTable,
+  GenderName,
+} from "./global-types";
 
 type SpeciesTag =
   | "Mythical"
@@ -192,7 +201,7 @@ export class Species
    * Not filled out for megas/primals - fall back to baseSpecies
    * for in-battle formes.
    */
-  readonly changesFrom?: string;
+  readonly changesFrom?: string | string[];
 
   /**
    * List of sources and other availability for a Pokemon transferred from
@@ -203,18 +212,20 @@ export class Species
   /**
    * Singles Tier. The Pokemon's location in the Smogon tier system.
    */
-  readonly tier: TierTypes.Singles | TierTypes.Other;
+  readonly tier: TierTypes["singles"] | TierTypes["other"];
   /**
    * Doubles Tier. The Pokemon's location in the Smogon doubles tier system.
    */
-  readonly doublesTier: TierTypes.Doubles | TierTypes.Other;
+  readonly doublesTier: TierTypes["doubles"] | TierTypes["other"];
   /**
    * National Dex Tier. The Pokemon's location in the Smogon National Dex tier system.
    */
-  readonly natDexTier: TierTypes.Singles | TierTypes.Other;
+  readonly natDexTier: TierTypes["singles"] | TierTypes["other"];
 
-  constructor(data: AnyObject) {
+  constructor(data: PokemonData) {
+    // @ts-expect-error: Classes are dumb
     super(data);
+    // @ts-expect-error: Classes are dumb
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     data = this;
 
@@ -233,14 +244,14 @@ export class Species
     this.abilities = data.abilities || { 0: "" };
     this.types = data.types || ["???"];
     this.addedType = data.addedType || undefined;
-    this.prevo = data.prevo || "";
-    this.tier = data.tier || "";
-    this.doublesTier = data.doublesTier || "";
-    this.natDexTier = data.natDexTier || "";
+    this.prevo = data.prevo ?? "";
+    this.tier = data.tier ?? undefined;
+    this.doublesTier = data.doublesTier ?? undefined;
+    this.natDexTier = data.natDexTier ?? undefined;
     this.evos = data.evos || [];
-    this.evoType = data.evoType || undefined;
-    this.evoMove = data.evoMove || undefined;
-    this.evoLevel = data.evoLevel || undefined;
+    this.evoType = data.evoType ?? undefined;
+    this.evoMove = data.evoMove ?? undefined;
+    this.evoLevel = data.evoLevel ?? undefined;
     this.nfe = data.nfe || false;
     this.eggGroups = data.eggGroups || [];
     this.canHatch = data.canHatch || false;
@@ -254,9 +265,9 @@ export class Species
           : this.gender === "N"
             ? { M: 0, F: 0 }
             : { M: 0.5, F: 0.5 });
-    this.requiredItem = data.requiredItem || undefined;
+    this.requiredItem = data.requiredItem ?? undefined;
     this.requiredItems =
-      this.requiredItems ||
+      this.requiredItems ??
       (this.requiredItem ? [this.requiredItem] : undefined);
     this.baseStats = data.baseStats || {
       hp: 0,
@@ -280,21 +291,21 @@ export class Species
     this.tags = data.tags || [];
     this.unreleasedHidden = data.unreleasedHidden || false;
     this.maleOnlyHidden = !!data.maleOnlyHidden;
-    this.maxHP = data.maxHP || undefined;
+    this.maxHP = data.maxHP ?? undefined;
     this.isMega =
       !!(this.forme && ["Mega", "Mega-X", "Mega-Y"].includes(this.forme)) ||
       undefined;
-    this.canGigantamax = data.canGigantamax || undefined;
+    this.canGigantamax = data.canGigantamax ?? undefined;
     this.gmaxUnreleased = !!data.gmaxUnreleased;
     this.cannotDynamax = !!data.cannotDynamax;
     this.battleOnly =
-      data.battleOnly || (this.isMega ? this.baseSpecies : undefined);
+      data.battleOnly ?? (this.isMega ? this.baseSpecies : undefined);
     this.changesFrom =
-      data.changesFrom ||
+      data.changesFrom ??
       (this.battleOnly !== this.baseSpecies
         ? this.battleOnly
         : this.baseSpecies);
-    this.pokemonGoData = data.pokemonGoData || undefined;
+    this.pokemonGoData = data.pokemonGoData ?? undefined;
     if (Array.isArray(data.changesFrom)) this.changesFrom = data.changesFrom[0];
 
     if (!this.gen && this.num >= 1) {
@@ -330,4 +341,115 @@ export class Species
       }
     }
   }
+}
+
+interface PokemonData {
+  name: string;
+  fullname: string;
+  effectType: string;
+  baseSpecies: string;
+  forme: string;
+  baseForme: string;
+  cosmeticFormes: string[];
+  otherFormes: string[];
+  formeOrder: string[];
+  spriteid: string;
+  abilities: SpeciesAbility;
+  types: string[];
+  addedType: string;
+  prevo?: string;
+  /**
+   * Singles Tier. The Pokemon's location in the Smogon tier system.
+   */
+  readonly tier: TierTypes["singles"] | TierTypes["other"];
+  /**
+   * Doubles Tier. The Pokemon's location in the Smogon doubles tier system.
+   */
+  readonly doublesTier: TierTypes["doubles"] | TierTypes["other"];
+  /**
+   * National Dex Tier. The Pokemon's location in the Smogon National Dex tier system.
+   */
+  readonly natDexTier: TierTypes["singles"] | TierTypes["other"];
+  evos: string[];
+  evoType?:
+    | "trade"
+    | "useItem"
+    | "levelMove"
+    | "levelExtra"
+    | "levelFriendship"
+    | "levelHold"
+    | "other";
+  evoMove?: string;
+  evoLevel?: number;
+  nfe: boolean;
+  eggGroups: string[];
+  canHatch: boolean;
+  gender: GenderName;
+  genderRatio: { M: number; F: number };
+  baseStats: StatsTable;
+  maxHP?: number;
+  /** A Pokemon's Base Stat Total */
+  bst: number;
+  /** Weight (in kg). Not valid for OMs; use weighthg / 10 instead. */
+  weightkg: number;
+  /** Weight (in integer multiples of 0.1kg). */
+  weighthg: number;
+  /** Height (in m). */
+  heightm: number;
+  /** Color. */
+  color: string;
+  /**
+   * Tags, boolean data. Currently just legendary/mythical status.
+   */
+  tags: SpeciesTag[];
+  /** Does this Pokemon have an unreleased hidden ability? */
+  unreleasedHidden: boolean | "Past";
+  /**
+   * Is it only possible to get the hidden ability on a male pokemon?
+   * This is mainly relevant to Gen 5.
+   */
+  maleOnlyHidden: boolean;
+  /** True if a pokemon is mega. */
+  isMega?: boolean;
+  /** True if a pokemon is primal. */
+  isPrimal?: boolean;
+  /** Name of its Gigantamax move, if a pokemon is capable of gigantamaxing. */
+  canGigantamax?: string;
+  /** If this Pokemon can gigantamax, is its gigantamax released? */
+  gmaxUnreleased?: boolean;
+  /** True if a Pokemon species is incapable of dynamaxing */
+  cannotDynamax?: boolean;
+  /** The Tera Type this Pokemon is forced to use */
+  forceTeraType?: string;
+  /** What it transforms from, if a pokemon is a forme that is only accessible in battle. */
+  battleOnly?: string | string[];
+  /** Required item. Do not use this directly; see requiredItems. */
+  requiredItem?: string;
+  /** Required move. Move required to use this forme in-battle. */
+  requiredMove?: string;
+  /** Required ability. Ability required to use this forme in-battle. */
+  requiredAbility?: string;
+  /**
+   * Required items. Items required to be in this forme, e.g. a mega
+   * stone, or Griseous Orb. Array because Arceus formes can hold
+   * either a Plate or a Z-Crystal.
+   */
+  requiredItems?: string[];
+
+  /**
+   * Formes that can transform into this Pokemon, to inherit learnsets
+   * from. (Like `prevo`, but for transformations that aren't
+   * technically evolution. Includes in-battle transformations like
+   * Zen Mode and out-of-battle transformations like Rotom.)
+   *
+   * Not filled out for megas/primals - fall back to baseSpecies
+   * for in-battle formes.
+   */
+  changesFrom?: string | string[];
+
+  /**
+   * List of sources and other availability for a Pokemon transferred from
+   * Pokemon GO.
+   */
+  pokemonGoData?: string[];
 }

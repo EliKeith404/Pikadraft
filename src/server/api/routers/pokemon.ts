@@ -3,10 +3,9 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { Sprites } from "@pkmn/img";
 import {
   Generations,
-  TierTypes,
+  type TierTypes,
   type SpeciesFormatsData,
 } from "~/server/lib/formats-data/format-types";
-import { resourceLimits } from "worker_threads";
 import { Pokedex } from "~/server/lib/pokedex/pokedex";
 
 export const pokemonRouter = createTRPCRouter({
@@ -22,12 +21,14 @@ export const pokemonRouter = createTRPCRouter({
     .input(z.object({ name: z.string() }))
     .query(({ input }) => {
       // Stuff
+      console.log(input);
     }),
 
   getById: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(({ input }) => {
       // Stuff
+      console.log(input);
     }),
 
   /**
@@ -74,7 +75,9 @@ export const pokemonRouter = createTRPCRouter({
         format: z.enum(["doublesTier", "natDexTier", "tier"]),
         tierArray: z
           .array(
-            z.custom<TierTypes.Singles | TierTypes.Doubles | TierTypes.Other>(),
+            z.custom<
+              TierTypes["singles"] | TierTypes["doubles"] | TierTypes["other"]
+            >(),
           )
           .default(["OU", "UU", "RU", "NU", "PU", "ZU"]),
         choose: z.number().default(3),
@@ -102,7 +105,7 @@ export const pokemonRouter = createTRPCRouter({
         for (const poke in Generations[input.generation]) {
           if (Generations[input.generation][poke]?.[input.format] === tier) {
             const { url: spriteUrl } = Sprites.getPokemon(poke);
-            const { name, types } = Pokedex[poke as keyof typeof Pokedex]!;
+            const { name, types } = Pokedex[poke]!;
 
             // Get typeIconUrl
             const typeIconUrls = [];
@@ -141,7 +144,7 @@ export const pokemonRouter = createTRPCRouter({
         generation: z.custom<keyof typeof Generations>(),
         format: z.enum(["doublesTier", "natDexTier", "tier"]),
         tier: z.custom<
-          TierTypes.Singles | TierTypes.Doubles | TierTypes.Other
+          TierTypes["singles"] | TierTypes["doubles"] | TierTypes["other"]
         >(),
         choose: z.number().default(3),
         currentParty: z.array(z.string()),
@@ -156,7 +159,7 @@ export const pokemonRouter = createTRPCRouter({
           !input.currentParty.includes(poke)
         ) {
           const { url: spriteUrl } = Sprites.getPokemon(poke);
-          const { name, types } = Pokedex[poke as keyof typeof Pokedex]!;
+          const { name, types } = Pokedex[poke]!;
 
           // Get typeIconUrl
           const typeIconUrls = [];
