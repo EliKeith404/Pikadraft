@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import Image from "next/image";
 import React from "react";
 
@@ -13,7 +12,7 @@ type DraftPokemonProps = {
 
 const DraftOption = (props: DraftPokemonProps) => {
   return (
-    <div className="rounded-xl from-pink-500 to-red-500 p-1 shadow hover:cursor-pointer hover:bg-gradient-to-r">
+    <div className="rounded-xl from-purple-500 to-blue-500 p-1 shadow hover:cursor-pointer hover:bg-gradient-to-tr peer-data-[state=checked]:bg-gradient-to-tr peer-data-[state=checked]:from-pink-500 peer-data-[state=checked]:to-red-500">
       <div className="bg-card text-card-foreground rounded-xl p-4">
         <div className="flex h-64 w-44 flex-col items-center justify-center gap-1 ">
           {/* NAME */}
@@ -25,6 +24,7 @@ const DraftOption = (props: DraftPokemonProps) => {
             {props.typeIconUrls.map((url, i) => (
               <Image
                 key={i}
+                className="select-none"
                 width={32}
                 height={14}
                 src={url}
@@ -37,8 +37,10 @@ const DraftOption = (props: DraftPokemonProps) => {
           {/* SPRITE */}
           <div className="relative flex h-40 w-32 items-center justify-center">
             <Image
-              className="object-contain"
+              className="select-none object-contain"
+              priority
               fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               src={props.spriteUrl}
               alt={props.name}
             />

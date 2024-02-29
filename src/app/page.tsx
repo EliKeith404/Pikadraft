@@ -3,8 +3,9 @@
 import { CreatePost } from "~/app/_components/create-post";
 import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
-import DraftOption from "./_components/draft-option";
 import React from "react";
+import DraftContainer from "./_components/draft-container";
+import SignInButton from "./_components/signin-btn";
 
 export default async function Home() {
   const randomized = await api.pokemon.getRandomSetByTier.query({
@@ -19,19 +20,9 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <div className="flex gap-2">
-        {randomized.map((poke) => (
-          <React.Fragment key={poke.name}>
-            <DraftOption
-              name={poke.name}
-              tier={poke.tier}
-              spriteUrl={poke.spriteUrl}
-              typeIconUrls={poke.typeIconUrls}
-            />
-          </React.Fragment>
-        ))}
-      </div>
-      {/* <CrudShowcase /> */}
+      <DraftContainer pokeSelections={randomized} />
+      <SignInButton />
+      <CrudShowcase />
     </main>
   );
 }

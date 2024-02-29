@@ -5,6 +5,7 @@ import {
   type NextAuthOptions,
 } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import WorkOSProvider from "next-auth/providers/workos";
 
 import { env } from "~/env";
 import { db } from "~/server/db";

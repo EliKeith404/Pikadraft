@@ -1,5 +1,5 @@
 import type { Nonstandard } from "../formats-data/format-types";
-import type { AnyObject, EffectType, ID } from "./global-types";
+import type { EffectType, ID } from "./global-types";
 
 // eslint-disable-next-line
 export function toID(text: any): ID {
