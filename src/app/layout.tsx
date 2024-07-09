@@ -32,7 +32,9 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <div className="min-h-screen bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+              {children}
+            </div>
           </ThemeProvider>
         </TRPCReactProvider>
       </body>
