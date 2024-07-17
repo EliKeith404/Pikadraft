@@ -14,6 +14,8 @@ const DraftContainer = (props: DraftContainerProps) => {
   // const [currentParty, setCurrentParty] = useState<string[]>([]);
   const [selection, setSelection] = useState<string>("");
 
+  console.log(selection);
+
   return (
     <RadioGroup className="flex gap-2">
       {props.pokeSelections.map((poke) => (

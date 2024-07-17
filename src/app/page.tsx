@@ -4,7 +4,6 @@ import { CreatePost } from "~/app/_components/create-post";
 import { getServerAuthSession } from "~/server/auth";
 import { api } from "~/trpc/server";
 import React from "react";
-import DraftContainer from "./_components/draft-container";
 import SignInButton from "./_components/signin-btn";
 
 export default async function Home() {
@@ -20,7 +19,6 @@ export default async function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
-      <DraftContainer pokeSelections={randomized} />
       <SignInButton />
       <CrudShowcase />
     </main>
