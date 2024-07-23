@@ -12,6 +12,7 @@ export default async function DraftPickPage() {
     // choose: 4,
     filters: {
       // noRegionalFormes: false,
+      // noNFE: false,
       // noMegaFormes: false,
       // noItemFormes: false,
       // noBattleFormes: false,

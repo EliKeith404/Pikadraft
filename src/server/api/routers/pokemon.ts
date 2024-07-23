@@ -151,6 +151,7 @@ export const pokemonRouter = createTRPCRouter({
         filters: z
           .object({
             noRegionalFormes: z.boolean().default(false),
+            noNFE: z.boolean().default(false),
             noMegaFormes: z.boolean().default(true),
             noItemFormes: z.boolean().default(true),
             noBattleFormes: z.boolean().default(true),
@@ -192,6 +193,10 @@ export const pokemonRouter = createTRPCRouter({
               "Paldea-Blaze",
               "Paldea-Aqua",
             ].includes(Pokedex[poke]?.forme ?? "")
+          ) &&
+          // Filter out NFE
+          !(
+            input.filters?.noNFE === true && Pokedex[poke]?.evos !== undefined
           ) &&
           // Filter out mega formes
           !(
