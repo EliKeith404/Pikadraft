@@ -168,7 +168,6 @@ export const pokemonRouter = createTRPCRouter({
 
         if (
           // FILTERS ======
-          // Todo: Need filter for Pikachu forms
           // Filter for tier, if input tier is 'AG' include all tiers
           (pokemonTierObj?.[input.format] === input.tier ||
             input.tier === "AG") &&
@@ -281,10 +280,12 @@ export const pokemonRouter = createTRPCRouter({
                 Generations[input.generation][poke]?.natDexTier ??
                 Generations[input.generation][pokeBattleName]?.natDexTier ??
                 Generations[input.generation][poke]?.tier ??
-                Generations[input.generation][pokeBattleName]?.tier
+                Generations[input.generation][pokeBattleName]?.tier ??
+                ""
               : // Otherwise use normal tier
                 Generations[input.generation][poke]?.tier ??
-                Generations[input.generation][pokeBattleName]?.tier;
+                Generations[input.generation][pokeBattleName]?.tier ??
+                "";
 
           // Get typeIconUrl
           const typeIconUrls = [];
