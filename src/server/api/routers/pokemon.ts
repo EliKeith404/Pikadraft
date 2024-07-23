@@ -148,18 +148,138 @@ export const pokemonRouter = createTRPCRouter({
         >(),
         choose: z.number().default(3),
         currentParty: z.array(z.string()),
+        filters: z
+          .object({
+            noRegionalFormes: z.boolean().default(false),
+            noMegaFormes: z.boolean().default(true),
+            noItemFormes: z.boolean().default(true),
+            noBattleFormes: z.boolean().default(true),
+            noEventFormes: z.boolean().default(true),
+          })
+          .optional(),
       }),
     )
     .query(({ input }) => {
       const pokemonInTierArray = [];
 
       for (const poke in Generations[input.generation]) {
+        const pokemonTierObj = Generations[input.generation][poke];
+
         if (
-          Generations[input.generation][poke]?.[input.format] === input.tier &&
+          // FILTERS ======
+          // Todo: Need filter for Pikachu forms
+          // Filter for tier, if input tier is 'AG' include all tiers
+          (pokemonTierObj?.[input.format] === input.tier ||
+            input.tier === "AG") &&
+          // Filter out any weird custom Pokemon
+          pokemonTierObj?.isNonstandard !== "CAP" &&
+          pokemonTierObj?.isNonstandard !== "Custom" &&
+          // Filter out Illegal Pokemon, unless they have a National Dex tier for AG filtering
+          !(
+            pokemonTierObj?.tier === "Illegal" &&
+            pokemonTierObj?.natDexTier === undefined
+          ) &&
+          // Filter out regonal variants
+          !(
+            !poke.includes("pikachu") &&
+            input.filters?.noRegionalFormes === true &&
+            [
+              "Alola",
+              "Galar",
+              "Hisui",
+              "Paldea",
+              "Paldea-Combat",
+              "Paldea-Blaze",
+              "Paldea-Aqua",
+            ].includes(Pokedex[poke]?.forme ?? "")
+          ) &&
+          // Filter out mega formes
+          !(
+            input.filters?.noMegaFormes === true &&
+            Pokedex[poke]?.forme === "Mega"
+          ) &&
+          !(
+            input.filters?.noItemFormes === true &&
+            [
+              "Griseous Core",
+              "Lustrous Globe",
+              "Adamant Crystal",
+              "Douse Drive",
+              "Shock Drive",
+              "Burn Drive",
+              "Chill Drive",
+              "Bug Memory",
+              "Dark Memory",
+              "Dragon Memory",
+              "Electric Memory",
+              "Fairy Memory",
+              "Fighting Memory",
+              "Fire Memory",
+              "Flying Memory",
+              "Ghost Memory",
+              "Grass Memory",
+              "Ground Memory",
+              "Ice Memory",
+              "Poison Memory",
+              "Psychic Memory",
+              "Rock Memory",
+              "Steel Memory",
+              "Water Memory",
+              "Rusted Sword",
+              "Rusted Shield",
+            ].includes(Pokedex[poke]?.requiredItem ?? "")
+          ) &&
+          // Filter out battle formes
+          !(
+            !poke.includes("zacian") &&
+            !poke.includes("zamazenta") &&
+            input.filters?.noBattleFormes === true &&
+            Pokedex[poke]?.battleOnly !== undefined
+          ) &&
+          // Filter out Event versions of Pokemon
+          !(
+            poke.includes("pikachu") &&
+            input.filters?.noEventFormes === true &&
+            [
+              "Cosplay",
+              "Rock-Star",
+              "Belle",
+              "Pop-Star",
+              "PhD",
+              "Libre",
+              "Original",
+              "Hoenn",
+              "Sinnoh",
+              "Unova",
+              "Kalos",
+              "Alola",
+              "Partner",
+              "Starter",
+              "World",
+            ].includes(Pokedex[poke]?.forme ?? "")
+          ) &&
+          // Filter out Pokemon that are already in the party, no duplicates
           !input.currentParty.includes(poke)
+          //* ================================================ END FILTERS ===============================================
         ) {
           const { url: spriteUrl } = Sprites.getPokemon(poke);
-          const { name, types } = Pokedex[poke]!;
+          const { name, types, num: id } = Pokedex[poke]!;
+
+          const pokeBattleName = (Pokedex[poke]?.battleOnly ?? "")
+            .toString()
+            .replaceAll("-", "");
+
+          // Grab and format the pokemon's tier. If the pokemon is a form, grab base form tier.
+          const tier =
+            input.tier === "AG"
+              ? // If tier is AnythingGoes, use Natdex tier
+                Generations[input.generation][poke]?.natDexTier ??
+                Generations[input.generation][pokeBattleName]?.natDexTier ??
+                Generations[input.generation][poke]?.tier ??
+                Generations[input.generation][pokeBattleName]?.tier
+              : // Otherwise use normal tier
+                Generations[input.generation][poke]?.tier ??
+                Generations[input.generation][pokeBattleName]?.tier;
 
           // Get typeIconUrl
           const typeIconUrls = [];
@@ -170,15 +290,16 @@ export const pokemonRouter = createTRPCRouter({
           }
 
           pokemonInTierArray.push({
+            id: id,
             name: name,
-            tier: input.tier,
+            tier: tier,
             spriteUrl: spriteUrl,
             typeIconUrls: typeIconUrls,
           });
         }
       }
 
-      // Shuffle Array
+      // Shuffle and select X Pokemon from Array
       const result = pokemonInTierArray
         .sort(() => 0.5 - Math.random())
         .slice(0, input.choose);
