@@ -14,7 +14,8 @@ type SpeciesTag =
   | "Mythical"
   | "Restricted Legendary"
   | "Sub-Legendary"
-  | "Paradox";
+  | "Paradox"
+  | "Ultra Beast";
 
 export interface SpeciesData extends Partial<Species> {
   name: string;
@@ -26,6 +27,7 @@ export interface SpeciesData extends Partial<Species> {
   baseStats: StatsTable;
   eggGroups: string[];
   weightkg: number;
+  mother?: string;
 }
 
 export class Species

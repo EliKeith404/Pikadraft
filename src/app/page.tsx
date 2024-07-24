@@ -13,6 +13,7 @@ export default async function Home() {
     tier: "UU",
     currentParty: [],
     // choose: 4,
+    filters: { noBattleFormes: true },
   });
 
   console.log(randomized);
