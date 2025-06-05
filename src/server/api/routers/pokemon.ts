@@ -143,9 +143,7 @@ export const pokemonRouter = createTRPCRouter({
       z.object({
         generation: z.custom<keyof typeof Generations>(),
         format: z.enum(["doublesTier", "natDexTier", "tier"]),
-        tier: z.custom<
-          TierTypes["singles"] | TierTypes["doubles"] | TierTypes["other"]
-        >(),
+        tier: z.array(z.custom<TierTypes["singles"] | TierTypes["doubles"] | TierTypes["other"]>()),
         choose: z.number().default(3),
         currentParty: z.array(z.string()),
         filters: z
@@ -157,7 +155,14 @@ export const pokemonRouter = createTRPCRouter({
             noBattleFormes: z.boolean().default(true),
             noEventFormes: z.boolean().default(true),
           })
-          .optional(),
+          .default({
+            noRegionalFormes: false,
+            noNFE: false,
+            noMegaFormes: true,
+            noItemFormes: true,
+            noBattleFormes: true,
+            noEventFormes: true,
+          }),
       }),
     )
     .query(({ input }) => {
@@ -165,12 +170,13 @@ export const pokemonRouter = createTRPCRouter({
 
       for (const poke in Generations[input.generation]) {
         const pokemonTierObj = Generations[input.generation][poke];
+        const pokemonTier = pokemonTierObj?.[input.format]
 
         if (
           // FILTERS ======
           // Filter for tier, if input tier is 'AG' include all tiers
-          (pokemonTierObj?.[input.format] === input.tier ||
-            input.tier === "AG") &&
+          (pokemonTier && input.tier.includes(pokemonTier) ||
+            input.tier.includes('AG')) &&
           // Filter out any weird custom Pokemon
           pokemonTierObj?.isNonstandard !== "CAP" &&
           pokemonTierObj?.isNonstandard !== "Custom" &&
@@ -275,7 +281,7 @@ export const pokemonRouter = createTRPCRouter({
 
           // Grab and format the pokemon's tier. If the pokemon is a form, grab base form tier.
           const tier =
-            input.tier === "AG"
+            input.tier.includes("AG")
               ? // If tier is AnythingGoes, use Natdex tier
                 Generations[input.generation][poke]?.natDexTier ??
                 Generations[input.generation][pokeBattleName]?.natDexTier ??
